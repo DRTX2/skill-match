@@ -1,4 +1,5 @@
-import { NestFactory } from '@nestjs/core';
+// is the entry  by the application and instance this one.
+import { NestFactory } from '@nestjs/core';   
 import { AppModule } from './app.module';
 
 async function bootstrap() {
