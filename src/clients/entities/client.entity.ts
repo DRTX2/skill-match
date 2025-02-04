@@ -3,11 +3,11 @@ import { Review } from "src/reviews/entities/review.entity";
 import { User } from "src/users/entities/user.entity";
 import {Job} from "src/jobs/entities/job.entity";
 
-class Client extends User {
-    companyName?: string;
-    postedJobs: Job[] = [];
-    postedProjects: Project[] = [];
-    reviewsReceived: Review[] = [];
+export class Client extends User {
+  companyName?: string;
+  postedJobs: Job[] = [];
+  postedProjects: Project[] = [];
+  reviewsReceived: Review[] = [];
   
     // constructor(id, name, email, password, companyName) { ... }
   
