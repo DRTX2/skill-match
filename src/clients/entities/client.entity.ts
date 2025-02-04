@@ -1,6 +1,7 @@
 import { Project } from "src/projects/entities/project.entity";
 import { Review } from "src/reviews/entities/review.entity";
 import { User } from "src/users/entities/user.entity";
+import {Job} from "src/jobs/entities/job.entity";
 
 class Client extends User {
     companyName?: string;

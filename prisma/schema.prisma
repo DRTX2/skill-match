@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
@@ -9,6 +7,41 @@ generator client {
 }
 
 datasource db {
-  provider = "mariadb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+/*
+El error que estás viendo ocurre porque en las relaciones 1 a 1 en Prisma, solo uno de los dos modelos puede tener las directivas @relation con los atributos fields y references definidos. En este caso, ambos modelos (User y Profile) están proporcionando tanto fields como references, lo cual no es necesario.
+
+Además, el error relacionado con "A one-to-one relation must use unique fields" sugiere que la clave foránea id_usr_prof en el modelo Profile no está marcada como única. Esto es importante en relaciones 1 a 1, ya que cada perfil debe estar asociado a un único usuario.
+
+
+Marcamos la clave foránea id_usr_prof como @unique en Profile para cumplir con la restricción de relaciones 1 a 1.
+*/
+
+model User {
+  id_usr       Int      @id @default(autoincrement())
+  nam_usr      String
+  psw_usr      String
+  email_usr    String   @unique
+  cret_at_usr  DateTime @default(now())
+  updt_at_usr  DateTime @updatedAt
+  
+  // Relación con Profile (campo de referencia)
+  prof         Profile? @relation(fields: [id_prof_usr], references: [id_prof])
+  id_prof_usr  Int?     @unique
+}
+
+model Profile {
+  id_prof      Int      @id @default(autoincrement())
+  bio_prof     String?  
+  loc_prof     String?  
+  web_prof     String?  
+  skills_prof  String?  // Habilidades en formato texto, separados por coma
+  pict_prof    String?  // URL a la imagen del perfil
+  
+  // Relación con User (agregamos el campo para la relación opuesta)
+  user         User?    @relation
+  id_usr_prof  Int?     @unique // La clave foránea hacia el modelo User
 }
