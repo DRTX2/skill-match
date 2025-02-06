@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Prisma } from '@prisma/client';
-import { CreateUserDto } from './dto/create-user.dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,7 +23,7 @@ export class UsersController {
   }
 
   @Get()
-  findAll(@Query('role') role?: 'FREELANCER'|'WORKER'|'CLIENT') {
+  findAll(@Query('role') role?: 'FREELANCER' | 'WORKER' | 'CLIENT') {
     return this.usersService.findAll(role);
   }
 
@@ -23,7 +33,10 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: Prisma.UserCreateInput) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
     return this.usersService.update(+id, updateUserDto);
   }
 

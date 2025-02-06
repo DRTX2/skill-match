@@ -13,6 +13,9 @@ import { TasksModule } from './tasks/tasks.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ClientsModule } from './clients/clients.module';
 import { FreelancersModule } from './freelancers/freelancers.module';
+import { ProfilesModule } from './profiles/profiles.module';
+import { ProfileController } from './profile/profile.controller';
+import { ProfileService } from './profile/profile.service';
 
 @Module({
   imports: [
@@ -27,8 +30,9 @@ import { FreelancersModule } from './freelancers/freelancers.module';
     WorkerModule,
     AdminModule,
     DatabaseModule,
+    ProfilesModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, ProfileController],
+  providers: [AppService, ProfileService],
 })
 export class AppModule {}
