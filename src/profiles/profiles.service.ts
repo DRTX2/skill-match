@@ -9,16 +9,17 @@ export class ProfilesService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createProfileDto: CreateProfileDto) {
+    const {bio, location, website, skills, picture, userId}=createProfileDto;
     try {
       return await this.databaseService.profile.create({
         data: {
-          bio: createProfileDto.bio,
-          location: createProfileDto.location,
-          website: createProfileDto.website,
-          skills: createProfileDto.skills,
-          picture: createProfileDto.picture,
-          user: createProfileDto.userId
-            ? { connect: { id: createProfileDto.userId } }
+          bio,
+          location,
+          website,
+          skills,
+          picture,
+          user: userId
+            ? { connect: { id: userId } }
             : undefined,
         },
       });
@@ -71,10 +72,11 @@ export class ProfilesService {
   }
 
   async searchProfiles(query: { skills?: string; location?: string }) {
+    const {skills, location}=query;
     return await this.databaseService.profile.findMany({
       where: {
-        skills: query.skills ? { contains: query.skills, mode: 'insensitive' } : undefined,
-        location: query.location ? { contains: query.location, mode: 'insensitive' } : undefined,
+        skills: skills ? { contains: skills, mode: 'insensitive' } : undefined,
+        location: location ? { contains: location, mode: 'insensitive' } : undefined,
       },
     });
   }
