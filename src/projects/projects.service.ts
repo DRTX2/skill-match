@@ -74,5 +74,92 @@ export class ProjectsService {
     }
   }
 
+  async findAllByClient(clientId: number) {
+    const projects = await this.databaseService.project.findMany({
+      where: {
+        clientId,
+      },
+      include: {
+        tasks: true,
+        worker: true,
+      },
+    });
+
+    if (!projects || projects.length === 0) {
+      throw new NotFoundException(`No se encontraron proyectos para el cliente con id ${clientId}`);
+    }
+
+    return projects;
+  }
+
+  // Método para obtener todos los proyectos de un trabajador
+  async findAllByWorker(workerId: number) {
+    const projects = await this.databaseService.project.findMany({
+      where: {
+        workerId,
+      },
+      include: {
+        tasks: true,
+        client: true,
+      },
+    });
+
+    if (!projects || projects.length === 0) {
+      throw new NotFoundException(`No se encontraron proyectos para el trabajador con id ${workerId}`);
+    }
+
+    return projects;
+  }
+
+  /*
+  // Método para obtener proyectos con tareas pendientes
+  async findProjectsWithPendingTasks() {
+    const projects = await this.databaseService.project.findMany({
+      where: {
+        tasks: {
+          some: {
+            status: 'PENDING', // Suponiendo que tienes un campo status en Task
+          },
+        },
+      },
+      include: {
+        tasks: true,
+      },
+    });
+
+    return projects;
+  }
+  */
+
+  // Método para obtener proyectos cuyo presupuesto ha sido excedido
+  async findProjectsExceedingBudget() {
+    const projects = await this.databaseService.project.findMany({
+      where: {
+        budget: {
+          lt: 0, // Suponiendo que 'budget' es negativo si excede el presupuesto
+        },
+      },
+    });
+
+    return projects;
+  }
+
+  /*
+  // Método para cambiar el estado del proyecto
+  async changeProjectStatus(projectId: number, status: string) {
+    const project = await this.findOne(projectId);
+
+    if (!project) {
+      throw new NotFoundException(`Proyecto con id ${projectId} no encontrado`);
+    }
+
+    return await this.databaseService.project.update({
+      where: { id: projectId },
+      data: {
+        status, // Suponiendo que hay un campo "status" en Project
+      },
+    });
+  }
+  */
 
 }
