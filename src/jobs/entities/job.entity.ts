@@ -1,3 +1,5 @@
+import { User } from "src/users/entities/user.entity";
+
 export class Job {
     id: number;
     title: string;
@@ -5,6 +7,8 @@ export class Job {
     salary: number;
     clientId: number;
     workerId?: number;
+    client?: User;
+    worker?: User;
     // status: JobStatus; // OPEN, CLOSED, FILLED
   
     // constructor(id, title, description, salary, clientId) { ... }

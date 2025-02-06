@@ -1,26 +1,83 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
 @Injectable()
 export class ReviewsService {
-  create(createReviewDto: CreateReviewDto) {
-    return 'This action adds a new review';
+  constructor(private readonly databaseService: DatabaseService) {}
+
+  async create(createReviewDto: CreateReviewDto) {
+    try {
+      return await this.databaseService.review.create({
+        data: createReviewDto,
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error al crear la reseña: ${error.message}`);
+    }
   }
 
-  findAll() {
-    return `This action returns all reviews`;
+  async findAllByUser(userId: number) {
+    const reviews = await this.databaseService.review.findMany({
+      where: {
+        reviewerId: userId,
+      },
+      include: {
+        reviewedUser: true, 
+      },
+    });
+
+    if (!reviews || reviews.length === 0) {
+      throw new NotFoundException(`No se encontraron reseñas para el usuario con id ${userId}`);
+    }
+
+    return reviews;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} review`;
+  async findOne(id: number) {
+    const review = await this.databaseService.review.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        reviewer: true, 
+        reviewedUser: true, 
+      },
+    });
+
+    if (!review) {
+      throw new NotFoundException(`Reseña con id ${id} no encontrada`);
+    }
+
+    return review;
   }
 
-  update(id: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${id} review`;
+  async update(id: number, updateReviewDto: UpdateReviewDto) {
+    await this.findOne(id); 
+
+    try {
+      return await this.databaseService.review.update({
+        where: {
+          id,
+        },
+        data: updateReviewDto,
+      });
+    } catch (error) {
+      throw new NotFoundException(`Reseña con id ${id} no encontrada para actualizar`);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} review`;
+  async remove(id: number) {
+    await this.findOne(id); 
+
+    try {
+      return await this.databaseService.review.delete({
+        where: {
+          id,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException(`Reseña con id ${id} no encontrada para eliminar`);
+    }
   }
 }
