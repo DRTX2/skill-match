@@ -1,4 +1,4 @@
-import { Profile } from "./profile.entity";
+import { Profile } from "../../profiles/entities/profile.entity";
 
 export abstract class User {
     id:number;

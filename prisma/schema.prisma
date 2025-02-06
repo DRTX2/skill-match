@@ -1,7 +1,3 @@
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,37 +7,111 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/*
-El error que estás viendo ocurre porque en las relaciones 1 a 1 en Prisma, solo uno de los dos modelos puede tener las directivas @relation con los atributos fields y references definidos. En este caso, ambos modelos (User y Profile) están proporcionando tanto fields como references, lo cual no es necesario.
-
-Además, el error relacionado con "A one-to-one relation must use unique fields" sugiere que la clave foránea id_usr_prof en el modelo Profile no está marcada como única. Esto es importante en relaciones 1 a 1, ya que cada perfil debe estar asociado a un único usuario.
-
-
-Marcamos la clave foránea id_usr_prof como @unique en Profile para cumplir con la restricción de relaciones 1 a 1.
-*/
-
 model User {
-  id_usr       Int      @id @default(autoincrement())
-  nam_usr      String
-  psw_usr      String
-  email_usr    String   @unique
-  cret_at_usr  DateTime @default(now())
-  updt_at_usr  DateTime @updatedAt
-  
-  // Relación con Profile (campo de referencia)
-  prof         Profile? @relation(fields: [id_prof_usr], references: [id_prof])
-  id_prof_usr  Int?     @unique
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String    @unique
+  password        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  role            UserRole
+
+  // Relación 1 a 1 con Profile
+  profile         Profile?
+
+  // Relaciones con Proyectos y Trabajos
+  clientProjects  Project[] @relation("ClientProjects")
+  workerProjects  Project[] @relation("WorkerProjects")
+  clientJobs      Job[]     @relation("ClientJobs")
+  workerJobs      Job[]     @relation("WorkerJobs")
+
+  // Relaciones con Reseñas
+  reviewsGiven    Review[]  @relation("Reviewer")
+  reviewsReceived Review[]  @relation("ReviewedUser")
+
+  // Relación con tareas asignadas
+  assignedTasks   Task[]    @relation("AssignedTasks") // Relación inversa con Task
+
+  // Datos específicos de Freelancer y Worker
+  specialities    String[]
+  experience      Int?
+  cvUrl           String?
+  earnings        Float?    @default(0)
+
+  // Datos específicos de Client
+  companyName     String?
+}
+
+enum UserRole {
+  FREELANCER
+  WORKER
+  CLIENT
 }
 
 model Profile {
-  id_prof      Int      @id @default(autoincrement())
-  bio_prof     String?  
-  loc_prof     String?  
-  web_prof     String?  
-  skills_prof  String?  // Habilidades en formato texto, separados por coma
-  pict_prof    String?  // URL a la imagen del perfil
-  
-  // Relación con User (agregamos el campo para la relación opuesta)
-  user         User?    @relation
-  id_usr_prof  Int?     @unique // La clave foránea hacia el modelo User
+  id        Int     @id @default(autoincrement())
+  bio       String?
+  location  String?
+  website   String?
+  skills    String?
+  picture   String?
+
+  // Relación 1 a 1 con User
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int     @unique
+}
+
+model Review {
+  id             Int      @id @default(autoincrement())
+  rating         Int
+  comment        String
+  createdAt      DateTime @default(now())
+
+  // Relación con usuarios (quién reseña y quién es reseñado)
+  reviewer       User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  reviewerId     Int
+  reviewedUser   User     @relation("ReviewedUser", fields: [reviewedUserId], references: [id])
+  reviewedUserId Int
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   Int
+  assignedTo  User?    @relation("AssignedTasks", fields: [assignedToId], references: [id]) // Relación con User
+  assignedToId Int?
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  budget      Float
+
+  // Relación con el cliente
+  client      User     @relation("ClientProjects", fields: [clientId], references: [id])
+  clientId    Int
+
+  // Relación con el trabajador
+  worker      User?    @relation("WorkerProjects", fields: [workerId], references: [id])
+  workerId    Int?
+
+  tasks       Task[]   // Tareas asociadas al proyecto
+}
+
+model Job {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  salary      Float
+
+  // Relación con el cliente
+  client      User     @relation("ClientJobs", fields: [clientId], references: [id])
+  clientId    Int
+
+  // Relación con el trabajador
+  worker      User?    @relation("WorkerJobs", fields: [workerId], references: [id])
+  workerId    Int?
 }
